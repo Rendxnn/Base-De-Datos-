@@ -352,7 +352,8 @@ insert into Membresias(tipo,valor,num_integrantes)
     ('Individual',14900,1),
     ('Duo',19900,2),
     ('Familiar',23900,6),
-    ('Premium Para Estudiantes',7490,1);
+    ('Estudiantes',7490,1);
+
 
 
 insert into usuarios( nombre_completo,nombre_de_usuario,tipo_membresia,correo,fecha_registro,contrasenna,
@@ -386,6 +387,10 @@ insert into pago( idPago,id_usuario_pagador,tipo_memb_pagada,fecha_pago,fecha_ve
     (9632,2,'Duo','2022-02-12','2022-03-12',19900,'Tajeta Fisica'),
     (0894,3,'Individual','2022-08-20','2022-09-20',14900,'Tarjeta Debito/Credito'),
     (8426,4,'Estudiantes','2022-04-25','2022-05-25',7490,'Tajeta Fisica');
+insert into canciones_mas_escuchadas(id_cancion,id_artista)
+	values (1328,1),
+			(5816,3);
+          
 
 -- CONSULTAS
 -- Consultar Albumes
@@ -433,3 +438,56 @@ SELECT * FROM usuarios;
 
 -- Consultar usuarios_con_acceso_a_listas FALTA
 SELECT * FROM usuarios_con_acceso_a_listas;
+
+-- TRIGGER
+CREATE TABLE `Registros` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `registro` VARCHAR(255) NULL,
+  `fecha` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`));
+  
+SELECT * FROM Registros;
+
+delimiter //
+CREATE TRIGGER log_tabla_usuarios AFTER INSERT on usuarios
+for each row begin
+	insert into Registros (registro) value (concat('Se ha registrado un nuevo usuario con id: ', NEW.idUsuario, ' y nombre: ', NEW.nombre_completo));
+end//
+delimiter ;
+
+insert into usuarios( nombre_completo,nombre_de_usuario,tipo_membresia,correo,fecha_registro,contrasenna,
+					  fecha_nacimiento,id_membresia)
+	Values 
+    ('Pepe Perez','pepito','Familiar','pepe@gmail.com','2023-11-22','pepe123','2002-02-22',6540);
+insert into usuarios( nombre_completo,nombre_de_usuario,tipo_membresia,correo,fecha_registro,contrasenna,
+					  fecha_nacimiento,id_membresia)
+	Values 
+    ('Juan Lopez','juan','Familiar','juan@gmail.com','2023-11-22','juann123','2002-02-22',6040);
+    
+-- PROCEDIMIENTO
+delimiter $$
+CREATE PROCEDURE mostrarMembresia(in memb varchar(50), out cantidad int)
+BEGIN
+	SELECT tipo_membresia, count(*)  FROM usuarios 
+		WHERE tipo_membresia = memb group by tipo_membresia LIMIT 1;
+END$$
+delimiter ;
+
+CALL mostrarMembresia('Duo', @cantidad);
+CALL mostrarMembresia('Familiar', @cantidad);
+CALL mostrarMembresia('Individual', @cantidad);
+CALL mostrarMembresia('Estudiantes', @cantidad);
+
+-- FUNCION
+delimiter $$
+CREATE FUNCTION encontrar_cancion_mas_escuchada (artista varchar(100)) RETURNS varchar(100)
+BEGIN
+DECLARE nombre_cancion varchar(100);
+SELECT concat(artista,' - ',c.nombre) INTO nombre_cancion FROM canciones_mas_escuchadas cm, artistas a, canciones c
+	WHERE cm.id_artista = a.idArtistas and artista = a.nombre and cm.id_cancion = c.idCanciones;
+RETURN nombre_cancion;
+END$$
+delimiter ;
+
+select encontrar_cancion_mas_escuchada('Bad Bunny') as cancion_mas_escuchada;
+select encontrar_cancion_mas_escuchada('Dua Lipa') as cancion_mas_escuchada;
