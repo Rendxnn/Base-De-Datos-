@@ -444,8 +444,7 @@ CREATE TABLE `Registros` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `registro` VARCHAR(255) NULL,
   `fecha` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`));
-  
+  PRIMARY KEY (`id`));  
 SELECT * FROM Registros;
 
 delimiter //
@@ -463,20 +462,23 @@ insert into usuarios( nombre_completo,nombre_de_usuario,tipo_membresia,correo,fe
 					  fecha_nacimiento,id_membresia)
 	Values 
     ('Juan Lopez','juan','Familiar','juan@gmail.com','2023-11-22','juann123','2002-02-22',6040);
-    
+ 
+ 
 -- PROCEDIMIENTO
 delimiter $$
 CREATE PROCEDURE mostrarMembresia(in memb varchar(50), out cantidad int)
 BEGIN
-	SELECT tipo_membresia, count(*)  FROM usuarios 
+	SELECT  count(*)  into cantidad FROM usuarios 
 		WHERE tipo_membresia = memb group by tipo_membresia LIMIT 1;
 END$$
 delimiter ;
 
-CALL mostrarMembresia('Duo', @cantidad);
-CALL mostrarMembresia('Familiar', @cantidad);
-CALL mostrarMembresia('Individual', @cantidad);
-CALL mostrarMembresia('Estudiantes', @cantidad);
+CALL mostrarMembresia('Duo', @Cantidad_Duo);
+CALL mostrarMembresia('Familiar', @Cantidad_Familiar);
+CALL mostrarMembresia('Individual', @Cantidad_Individual);
+CALL mostrarMembresia('Estudiantes', @Cantidad_Estudiantes);
+SELECT @Cantidad_Duo, @Cantidad_Familiar, @Cantidad_Individual, @Cantidad_Estudiantes;
+
 
 -- FUNCION
 delimiter $$
